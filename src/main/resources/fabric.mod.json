@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "plutonium-debug",
+  "version": "${version}",
+  "name": "Plutonium Debug",
+  "description": "Loaded-world diagnostics for Meteor Client.",
+  "authors": ["Plutonium Debug contributors"],
+  "environment": "client",
+  "entrypoints": {
+    "meteor": ["dev.plutoniumdebug.PlutoniumDebug"]
+  },
+  "custom": { "meteor-client:color": "#d94242" },
+  "depends": { "minecraft": ">=1.21.4", "meteor-client": "*" }
+}
