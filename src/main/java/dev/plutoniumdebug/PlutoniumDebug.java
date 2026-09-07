@@ -13,9 +13,16 @@ import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.minecraft.item.Items;
 
-/** Entry point for conservative, loaded-world-only diagnostics. */
 public final class PlutoniumDebug extends MeteorAddon {
-    public static final Category CATEGORY = new Category("Plutonium Debug", Items.SPYGLASS.getDefaultStack());
+    public static final Category CATEGORY = new Category(
+        "Plutonium Debug",
+        Items.SPYGLASS.getDefaultStack()
+    );
+
+    @Override
+    public void onRegisterCategories() {
+        Modules.registerCategory(CATEGORY);
+    }
 
     @Override
     public void onInitialize() {
