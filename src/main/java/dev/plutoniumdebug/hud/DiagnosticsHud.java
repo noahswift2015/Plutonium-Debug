@@ -6,7 +6,6 @@ import meteordevelopment.meteorclient.systems.hud.HudElementInfo;
 import meteordevelopment.meteorclient.systems.hud.HudGroup;
 import meteordevelopment.meteorclient.systems.hud.HudRenderer;
 import meteordevelopment.meteorclient.utils.render.color.Color;
-import net.minecraft.nbt.NbtCompound;
 
 /** Compact status element, registered under a dedicated Plutonium Debug HUD section. */
 public final class DiagnosticsHud extends HudElement {
@@ -22,6 +21,4 @@ public final class DiagnosticsHud extends HudElement {
         renderer.text(title, x, y, TITLE, true);
         renderer.text(status, x, y + renderer.textHeight(), Color.WHITE, true);
     }
-    @Override public void readSettings(NbtCompound tag) {}
-    @Override public NbtCompound toTag() { return super.toTag(); }
 }

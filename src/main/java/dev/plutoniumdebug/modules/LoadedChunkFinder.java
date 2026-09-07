@@ -15,6 +15,7 @@ import net.minecraft.block.KelpBlock;
 import net.minecraft.block.NetherWartBlock;
 import net.minecraft.block.CropBlock;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.Heightmap;
 
 /** Reports observable mature crops in chunks the client already has. */
 public final class LoadedChunkFinder extends Module {
@@ -32,17 +33,22 @@ public final class LoadedChunkFinder extends Module {
         if (!LoadedWorld.ready() || cooldown-- > 0) return;
         BlockPos origin = mc.player.getBlockPos();
         int r = radius.get();
-        for (int x = -r; x <= r; x += 2) for (int z = -r; z <= r; z += 2) for (int y = mc.world.getBottomY(); y < mc.world.getTopY(); y += 2) {
-            BlockPos pos = origin.add(x, y - origin.getY(), z);
-            if (!LoadedWorld.isLoaded(mc.world, pos)) continue;
-            BlockState state = mc.world.getBlockState(pos);
-            boolean mature = crops.get() && ((state.getBlock() instanceof CropBlock crop && crop.isMature(state)) || (state.getBlock() instanceof NetherWartBlock && state.get(NetherWartBlock.AGE) == 3));
-            boolean aquatic = kelp.get() && (state.getBlock() instanceof KelpBlock || state.getBlock() instanceof CaveVines);
-            if ((mature || aquatic) && !pos.equals(lastReport)) {
-                info("Observed %s at %d, %d, %d (loaded chunk only).", state.getBlock().getName().getString(), pos.getX(), pos.getY(), pos.getZ());
-                lastReport = pos;
-                cooldown = 100;
-                return;
+        for (int x = -r; x <= r; x += 2) for (int z = -r; z <= r; z += 2) {
+            int worldX = origin.getX() + x;
+            int worldZ = origin.getZ() + z;
+            int topY = mc.world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, worldX, worldZ);
+            for (int y = mc.world.getBottomY(); y < topY; y += 2) {
+                BlockPos pos = new BlockPos(worldX, y, worldZ);
+                if (!LoadedWorld.isLoaded(mc.world, pos)) continue;
+                BlockState state = mc.world.getBlockState(pos);
+                boolean mature = crops.get() && ((state.getBlock() instanceof CropBlock crop && crop.isMature(state)) || (state.getBlock() instanceof NetherWartBlock && state.get(NetherWartBlock.AGE) == 3));
+                boolean aquatic = kelp.get() && (state.getBlock() instanceof KelpBlock || state.getBlock() instanceof CaveVines);
+                if ((mature || aquatic) && !pos.equals(lastReport)) {
+                    info("Observed %s at %d, %d, %d (loaded chunk only).", state.getBlock().getName().getString(), pos.getX(), pos.getY(), pos.getZ());
+                    lastReport = pos;
+                    cooldown = 100;
+                    return;
+                }
             }
         }
         cooldown = 20;
