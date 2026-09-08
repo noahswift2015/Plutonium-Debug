@@ -4,20 +4,25 @@ import dev.plutoniumdebug.PlutoniumDebug;
 import dev.plutoniumdebug.util.LoadedWorld;
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
-import meteordevelopment.meteorclient.renderer.ShapeMode;
+import meteordevelopment.meteorclient.renderer.text.TextRenderer;
 import meteordevelopment.meteorclient.settings.IntSetting;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.utils.render.NametagUtils;
 import meteordevelopment.meteorclient.utils.render.color.Color;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
+import org.joml.Vector3d;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-/** Identifies mob spawners delivered to the client; it does not inspect hidden terrain. */
+/** Labels client-visible mob spawners; it does not inspect hidden terrain. */
 public final class SpawnerNametags extends Module {
+    private static final String LABEL = "🦴 Skeleton Spawner";
+    private static final Color LABEL_COLOR = new Color(255, 255, 255);
+
     private final Setting<Integer> radius = settings.getDefaultGroup().add(
         new IntSetting.Builder()
             .name("radius")
@@ -28,12 +33,13 @@ public final class SpawnerNametags extends Module {
     );
 
     private final Set<BlockPos> spawners = new LinkedHashSet<>();
+    private final Vector3d tagPos = new Vector3d();
 
     public SpawnerNametags() {
         super(
             PlutoniumDebug.CATEGORY,
             "spawner-nametags",
-            "Marks loaded mob spawners without reading hidden terrain."
+            "Labels loaded mob spawners without reading hidden terrain."
         );
     }
 
@@ -64,13 +70,19 @@ public final class SpawnerNametags extends Module {
     @EventHandler
     private void onRender(Render3DEvent event) {
         for (BlockPos pos : spawners) {
-            event.renderer.box(
-                pos,
-                new Color(255, 210, 60, 35),
-                new Color(255, 210, 60),
-                ShapeMode.Both,
-                0
-            );
+            tagPos.set(pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5);
+
+            if (!NametagUtils.to2D(tagPos, 1.0)) continue;
+
+            NametagUtils.begin(tagPos);
+            TextRenderer text = TextRenderer.get();
+
+            text.begin(1.0, false, true);
+            double width = text.getWidth(LABEL) / 2.0;
+            text.render(LABEL, -width, 0, LABEL_COLOR);
+            text.end();
+
+            NametagUtils.end();
         }
     }
 }
