@@ -13,6 +13,7 @@ import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.minecraft.item.Items;
 import dev.plutoniumdebug.modules.AutoRelog;
+import dev.plutoniumdebug.modules.PlayerBypass;
 
 public final class PlutoniumDebug extends MeteorAddon {
     public static final Category CATEGORY = new Category(
@@ -27,6 +28,7 @@ public final class PlutoniumDebug extends MeteorAddon {
 
     @Override
     public void onInitialize() {
+        Modules.get().add(new PlayerBypass());
         Modules.get().add(new AutoRelog());
         Modules.get().add(new LoadedChunkFinder());
         Modules.get().add(new AdvancedBlockEsp());
