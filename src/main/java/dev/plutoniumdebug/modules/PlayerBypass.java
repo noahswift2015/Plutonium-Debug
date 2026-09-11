@@ -1,6 +1,7 @@
 package dev.plutoniumdebug.modules;
 
 import dev.plutoniumdebug.PlutoniumDebug;
+import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
 import meteordevelopment.meteorclient.renderer.ShapeMode;
 import meteordevelopment.meteorclient.settings.ColorSetting;
@@ -10,13 +11,17 @@ import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec3d;
 
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
-/** Cinematically highlights chunks containing loaded players. */
+/** Cinematically highlights chunks containing loaded players via raw server packet tracking. */
 public final class PlayerBypass extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
@@ -24,7 +29,7 @@ public final class PlayerBypass extends Module {
         .name("minimum-y")
         .description("Only mark chunks containing players at or above this height.")
         .defaultValue(-64)
-        .range(-64, 128)
+        .range(-64, 320)
         .build()
     );
 
@@ -32,7 +37,7 @@ public final class PlayerBypass extends Module {
         .name("maximum-y")
         .description("Only mark chunks containing players at or below this height.")
         .defaultValue(128)
-        .range(-64, 128)
+        .range(-64, 320)
         .build()
     );
 
@@ -50,6 +55,8 @@ public final class PlayerBypass extends Module {
         .build()
     );
 
+    // Track tracked entity ID -> Current Position (Vec3d)
+    private final Map<Integer, Vec3d> trackedPlayers = new HashMap<>();
     private final Set<ChunkPos> playerChunks = new LinkedHashSet<>();
 
     public PlayerBypass() {
@@ -58,6 +65,65 @@ public final class PlayerBypass extends Module {
             "player-bypass",
             "Cinematically highlights loaded chunks containing players."
         );
+    }
+
+    @Override
+    public void onActivate() {
+        trackedPlayers.clear();
+        playerChunks.clear();
+    }
+
+    @EventHandler
+    private void onReceivePacket(PacketEvent.Receive event) {
+        if (mc.world == null || mc.player == null) return;
+
+        // 1. Detect player entity spawn packet
+        if (event.packet instanceof EntitySpawnS2CPacket packet) {
+            if (packet.getEntityType() == EntityType.PLAYER) {
+                // Exclude self spawn packet
+                if (packet.getEntityId() != mc.player.getId()) {
+                    trackedPlayers.put(
+                        packet.getEntityId(),
+                        new Vec3d(packet.getX(), packet.getY(), packet.getZ())
+                    );
+                }
+            }
+        }
+
+        // 2. Detect absolute position updates (EntityPositionS2CPacket / Teleport)
+        else if (event.packet instanceof EntityPositionS2CPacket packet) {
+            if (trackedPlayers.containsKey(packet.getId())) {
+                trackedPlayers.put(
+                    packet.getId(),
+                    new Vec3d(packet.getX(), packet.getY(), packet.getZ())
+                );
+            }
+        }
+
+        // 3. Detect relative position updates (EntityS2CPacket - Move / Move & Rotate)
+        else if (event.packet instanceof EntityS2CPacket packet) {
+            int entityId = packet.getEntityId(mc.world);
+            if (trackedPlayers.containsKey(entityId)) {
+                Vec3d currentPos = trackedPlayers.get(entityId);
+                
+                // Packets specify offset shifts in 1/4096th fixed-point units or delta steps
+                double deltaX = packet.getDeltaX() / 4096.0;
+                double deltaY = packet.getDeltaY() / 4096.0;
+                double deltaZ = packet.getDeltaZ() / 4096.0;
+
+                trackedPlayers.put(
+                    entityId,
+                    currentPos.add(deltaX, deltaY, deltaZ)
+                );
+            }
+        }
+
+        // 4. Detect entity despawn / destruction packets
+        else if (event.packet instanceof EntitiesDestroyS2CPacket packet) {
+            for (int id : packet.getEntityIds()) {
+                trackedPlayers.remove(id);
+            }
+        }
     }
 
     @EventHandler
@@ -69,11 +135,13 @@ public final class PlayerBypass extends Module {
 
         playerChunks.clear();
 
-        for (PlayerEntity player : mc.world.getPlayers()) {
-            if (player == mc.player) continue;
-            if (player.getY() < minY || player.getY() > maxY) continue;
+        // Calculate chunk positions directly from stored raw packet coordinates
+        for (Vec3d pos : trackedPlayers.values()) {
+            if (pos.y < minY || pos.y > maxY) continue;
 
-            playerChunks.add(new ChunkPos(player.getBlockPos()));
+            int chunkX = (int) Math.floor(pos.x) >> 4;
+            int chunkZ = (int) Math.floor(pos.z) >> 4;
+            playerChunks.add(new ChunkPos(chunkX, chunkZ));
         }
 
         for (ChunkPos chunk : playerChunks) {
