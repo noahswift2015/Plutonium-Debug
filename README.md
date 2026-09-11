@@ -12,6 +12,7 @@ A small, original Meteor Client addon for **loaded-world diagnostics**. It is de
 - **Home Reset** — a deliberate one-shot helper that sends `/home delete <slot>` followed by `/home set <slot>` when activated. Confirm that your server supports those commands before use.
 - **Relog / player activity requests** — intentionally not implemented. A client cannot legitimately establish hidden player activity or bypass an anti-cheat; relogging should use Meteor/server controls with the server owner's permission.
 - **Plutonium Debug HUD** — a dedicated Meteor HUD group with a compact diagnostic status element.
+- **Region Map** — a toggleable module that renders a compact map of chunks already loaded by the client, with three editable notes and a list of configured Plutonium Debug hotkeys underneath.
 
 ## Safety model
 
