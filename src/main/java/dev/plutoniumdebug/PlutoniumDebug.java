@@ -9,6 +9,7 @@ import dev.plutoniumdebug.modules.HomeReset;
 import dev.plutoniumdebug.modules.LoadedChunkFinder;
 import dev.plutoniumdebug.modules.RegionMap;
 import dev.plutoniumdebug.modules.SpawnerNametags;
+import dev.plutoniumdebug.modules.SpawnerBeacons;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.systems.hud.Hud;
 import meteordevelopment.meteorclient.systems.modules.Category;
@@ -37,6 +38,7 @@ public final class PlutoniumDebug extends MeteorAddon {
         Modules.get().add(new AdvancedBlockEsp());
         Modules.get().add(new AmethystEsp());
         Modules.get().add(new SpawnerNametags());
+        Modules.get().add(new SpawnerBeacons());
         Modules.get().add(new BlockNotifier());
         Modules.get().add(new HomeReset());
         Hud.get().register(DiagnosticsHud.INFO);
