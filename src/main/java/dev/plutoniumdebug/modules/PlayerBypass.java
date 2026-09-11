@@ -82,7 +82,7 @@ public final class PlayerBypass extends Module {
                 mc.world.getBottomY(),
                 chunk.getStartZ(),
                 chunk.getEndX() + 1,
-                mc.world.getTopY(),
+                mc.world.getBottomY() + mc.world.getHeight(),
                 chunk.getEndZ() + 1,
                 fillColor.get(),
                 outlineColor.get(),
