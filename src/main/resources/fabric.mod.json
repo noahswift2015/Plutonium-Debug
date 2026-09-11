@@ -10,5 +10,5 @@
     "meteor": ["dev.plutoniumdebug.PlutoniumDebug"]
   },
   "custom": { "meteor-client:color": "#d94242" },
-  "depends": { "minecraft": ">=1.21.4", "meteor-client": "*" }
+  "depends": { "minecraft": ">=1.21.11", "meteor-client": "*" }
 }
