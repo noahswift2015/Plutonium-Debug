@@ -19,7 +19,9 @@ Every scanner checks `World.isChunkLoaded` before reading a block. The addon nev
 
 ## Build
 
-Use Java 21 and a compatible Meteor Client/Fabric dependency set:
+Use a **Java 21 JDK** (not a JRE) and a compatible Meteor Client/Fabric dependency set for Minecraft 1.21.11. Java 21 is the version required by Minecraft 1.21.11 and by this build configuration.
+
+The build uses Fabric Loom 1.11 because the older Loom 1.9 line cannot read the Unpick metadata used by Minecraft 1.21.11 mappings.
 
 ```bash
 gradle build

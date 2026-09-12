@@ -150,16 +150,17 @@ public final class LoadedChunkFinder extends Module {
 
     @EventHandler
     private void onRender(Render3DEvent event) {
-        Color fill = new Color(255, 0, 0, 20);
+        Color fill = new Color(255, 0, 0, 45);
         Color outline = new Color(255, 40, 40);
 
         for (ChunkPos chunk : suspiciousChunks) {
+            double surfaceY = LoadedWorld.getChunkSurfaceY(mc.world, chunk);
             event.renderer.box(
                 chunk.getStartX(),
-                mc.world.getBottomY(),
+                surfaceY + 0.05,
                 chunk.getStartZ(),
                 chunk.getEndX() + 1,
-                mc.world.getTopY(),
+                surfaceY + 0.25,
                 chunk.getEndZ() + 1,
                 fill,
                 outline,
