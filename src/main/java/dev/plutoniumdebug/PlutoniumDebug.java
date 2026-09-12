@@ -1,6 +1,7 @@
 package dev.plutoniumdebug;
 
 import dev.plutoniumdebug.hud.DiagnosticsHud;
+import dev.plutoniumdebug.hud.RegionMapHud;
 import dev.plutoniumdebug.modules.AdvancedBlockEsp;
 import dev.plutoniumdebug.modules.AmethystEsp;
 import dev.plutoniumdebug.modules.BlockNotifier;
@@ -41,6 +42,7 @@ public final class PlutoniumDebug extends MeteorAddon {
         Modules.get().add(new BlockNotifier());
         Modules.get().add(new HomeReset());
         Hud.get().register(DiagnosticsHud.INFO);
+        Hud.get().register(RegionMapHud.INFO);
     }
 
     @Override
